@@ -10,15 +10,11 @@ import h5py
 from mne.time_frequency import psd_array_welch
 import numpy as np
 import xarray as xr
-from frites import io
+#from frites import io
 import warnings
-
 # to remove the spam of pandas FutureWarning with iteritems
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
-
-# session
-SESSIONS = ['Mo180626003', 'Mo180627003']
+#%%
 
 
 def get_mixed_layers(layers_site, depths_site, spacing=400):
@@ -70,66 +66,99 @@ def redefine_layers(layers_site):
     return new_layers
 
 
-for session in SESSIONS:
-    # check where are we running the code
-    current_path = os.getcwd()
 
-    if current_path.startswith('C:'):
-        server = 'W:'  # local w VPN
-    elif current_path.startswith('/home/'):
-        server = '/envau/work/'  # niolon
-    elif current_path.startswith('/hpc/'):
-        server = '/envau/work/'  # niolon
-
-    # set the path
-    path = server + '/comco/nandi.n/LFP_timescales/Results/Bipolar_sites/'
-    path_output = server + '/comco/nandi.n/LFP_timescales/Results/PSDs/'
-
-    # get the filename of the data
-    file_name = [i for i in os.listdir(path) if os.path.isfile(os.path.join(path, i)) and
-                 f'{session}' in i and '-epo.fif' in i and 'LFP' in i and 'bipolar' in i]
-
-    # load the data
-    LFP_epochs = mne.read_epochs(os.path.join(path, file_name[0]), preload=False)
-
-    # compute the psd
-    n_per_seg = int(LFP_epochs.info['sfreq'])
-    psd, freqs = psd_array_welch(LFP_epochs.get_data(), sfreq=LFP_epochs.info['sfreq'],
-                                 fmin=0.1, fmax=150, average='median',
-                                 n_per_seg=n_per_seg,
-                                 n_overlap=int(n_per_seg/2), n_fft=n_per_seg)
-
-    # save the data
-    # build an xarray with the power in each site
-    power_xr = xr.DataArray(psd,
-                            dims=('trials', 'channels', 'freqs'),
-                            coords={'trials': range(LFP_epochs.get_data().shape[0]),
-                                    'channels': LFP_epochs.ch_names,
-                                    'freqs': freqs})
-
-    # check if there are two areas or one
-    areas = [LFP_epochs.metadata[area][0] for area in LFP_epochs.metadata.keys()
-             if 'area' in area]
-
-    # save the xarray per area (i.e. per site)
-    for i_area, area in enumerate(areas):
-        # find the masks of channels
-        area_mask = [i_ch for i_ch, channel in enumerate(LFP_epochs.ch_names) if area in channel]
-
-        # create the new array
-        power_area = power_xr[:, area_mask, :]
-
-        # add the layers and the depths to the xarray. Change the layers to not split L23
-        layers = redefine_layers(LFP_epochs.metadata[f'layers_{+1}'][0])
-        depths = LFP_epochs.metadata[f'depths_{+1}'][0]
-
-        # get the mixed layers
-        new_mix_layers = get_mixed_layers(layers, depths, spacing=400)
-
-        power_area = power_area.assign_coords(layers=('channels', layers),
-                                              depths=('channels', depths),
-                                              corrected_layers=('channels', new_mix_layers))
-
-        # save the xarray
-        power_area.to_netcdf(os.path.join(path_output,
-                                          f'{session}-bipolar_PSD-area_{area}-power.nc'))
+if __name__ == "__main__":
+    
+    # session
+    SESSIONS = ['Mo180712006']
+    #SESSIONS =['Mo180328001', 'Mo180712006']
+    
+    for session in SESSIONS:
+        #check where are we running the code
+        current_path = os.getcwd()
+    
+        if current_path.startswith('/Users'):
+            server = 'Volumes'  # local w VPN
+        elif current_path.startswith('/envau'):
+            server = 'envau'  # niolon
+        elif current_path.startswith('/hpc/'):
+            server = '/envau/work/'  # niolon
+    
+        # # set the path
+        # path = server + '/comco/nandi.n/LFP_timescales/Results/Bipolar_sites/'
+        # path_output = server + '/comco/nandi.n/LFP_timescales/Results/PSDs/'
+        
+        path = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites/{session}'
+        
+       # path = f'/Volumes/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites'
+        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/PSDs/{session}'
+        
+        if not os.path.exists(path_output):
+            os.mkdir(path_output)
+            
+    
+        # get the filename of the data
+        # file_name = [i for i in os.listdir(path) if os.path.isfile(os.path.join(path, i)) and
+        #              f'{session}' in i and '-epo.fif' in i and 'LFP' in i and 'bipolar' in i]
+        
+        for i in os.listdir(path):
+            if os.path.isfile((os.path.join(path,i))):
+                if f'{session}' in i and '-epo.fif' in i and 'LFP' in i and 'bipolar' in i:
+                    file_name= [i]
+            
+        
+        # load the data
+        LFP_epochs = mne.read_epochs(os.path.join(path, file_name[0]), preload=False)
+    
+        # compute the psd
+        n_per_seg = int(LFP_epochs.info['sfreq'])
+        psd, freqs = psd_array_welch(LFP_epochs.get_data(), sfreq=LFP_epochs.info['sfreq'],
+                                     fmin=0.1, fmax=150, average='median',
+                                     n_per_seg=n_per_seg,
+                                     n_overlap=int(n_per_seg/2), n_fft=n_per_seg)
+    
+        # save the data
+        # build an xarray with the power in each site
+        power_xr = xr.DataArray(psd,
+                                dims=('trials', 'channels', 'freqs'),
+                                coords={'trials': range(LFP_epochs.get_data().shape[0]),
+                                        'channels': LFP_epochs.ch_names,
+                                        'freqs': freqs})
+    
+        # check if there are two areas or one
+        # areas = [LFP_epochs.metadata[area][0] for area in LFP_epochs.metadata.keys()
+        #           if 'area' in area]
+        areas = []
+        for area in LFP_epochs.metadata.keys():
+            if 'area' in area:
+                areas.append(LFP_epochs.metadata[area][0])
+           
+        # save the xarray per area (i.e. per site)
+        for i_area, area in enumerate(areas):
+            # find the masks of channels
+            # area_mask = [i_ch for i_ch, channel in enumerate(LFP_epochs.ch_names) if area in channel]
+            area_mask = []
+            
+            for i_ch, channel in enumerate(LFP_epochs.ch_names):
+                if area in channel:
+                    area_mask.append(i_ch)
+            
+            
+    
+            # create the new array
+            power_area = power_xr[:, area_mask, :]
+    
+            # add the layers and the depths to the xarray. Change the layers to not split L23
+            layers = redefine_layers(LFP_epochs.metadata[f'layers_{+(i_area+1)}'][0])
+            depths = LFP_epochs.metadata[f'depths_{+(i_area+1)}'][0]
+    
+            # get the mixed layers
+            new_mix_layers = get_mixed_layers(layers, depths, spacing=400)
+    
+            power_area = power_area.assign_coords(layers=('channels', layers),
+                                                  depths=('channels', depths),
+                                                  corrected_layers=('channels', new_mix_layers))
+    
+            # save the xarray
+            power_area.to_netcdf(os.path.join(path_output,
+                                              f'{session}-bipolar_PSD-area_{area}-power.nc'))

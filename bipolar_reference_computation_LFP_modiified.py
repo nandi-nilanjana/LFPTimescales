@@ -130,6 +130,8 @@ def bipolar_derivation(lfp, depths, bipolar_spacing):
     return np.array(lfp_epochs_bipolar), np.array(depths_new_bipolar)
 
 
+
+
 if __name__ == "__main__":
     # list all the sessions that we want to preprocess
     SESSIONS = ['Mo180411001', 'Mo180412002', 'Mo180626003', 'Mo180627003', 'Mo180619002',
@@ -139,14 +141,24 @@ if __name__ == "__main__":
     # GOOD_LAMINAR_SESSIONS = ['Mo180411001', 'Mo180412002', 'Mo180626003', 'Mo180627003',
     #                          'Mo180523002', 'Mo180704003']
     
-    GOOD_LAMINAR_SESSIONS = ['t150327002']
+    GOOD_LAMINAR_SESSIONS = ['Mo180712006']
 
     # define the new spacing between channels in um
     BIPOLAR_SPACING = 400  # in um
+    
+    current_path = os.getcwd()
+    if current_path.startswith('/Users'):
+        server = 'Volumes' #local VPN
+    elif current_path.startswith('/envau'):
+        server = 'envau'
 
     for session in GOOD_LAMINAR_SESSIONS:
         
-        path_preprocessed = f'/Volumes/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
+        path_preprocessed = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
+        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites/{session}'
+        
+        if not os.path.exists(path_output) :
+            os.mkdir(path_output)
         
         signal_type= 'LFP'
 
@@ -189,7 +201,8 @@ if __name__ == "__main__":
         # paths = get_path_and_filenames(session, signal_type='LFP')
         
         paths = { 'path_preprocessed' : path_preprocessed, 
-                 'lfp_filename' : lfp_filename
+                 'lfp_filename' : lfp_filename,
+                  'path_output' : path_output
             }
         
         
@@ -247,20 +260,32 @@ if __name__ == "__main__":
                                                              bipolar_spacing=BIPOLAR_SPACING)
 
             # find the indexes in which the layers change
-            layers = metadata[f"layers_{probe}"][0]
+            layers = metadata[f"layers_{probe}"][0]            
             change_layers = np.where(np.array(layers[1:]) != np.array(layers[:-1]))[0] + 1
-
-            # get the depth corresponding to the change of the layers
-            depths_layers = np.array(metadata[f"depths_{probe}"][0])[change_layers]
-
+            
             # get the depth of the bipolar channels in mm
             depths_bipolar_mm = np.round(depths_bipolar * 1e-3, 2)  # in mm
+            
+            if change_layers.size !=0:
 
-            # find the groups of channels in between the depth borders for the layers
-            layer_idx = np.digitize(depths_bipolar_mm, depths_layers)  # 0, 1,..3 for each channel
+                # get the depth corresponding to the change of the layers
+                depths_layers = np.array(metadata[f"depths_{probe}"][0])[change_layers]
+    
+                # find the groups of channels in between the depth borders for the layers
+                
+                # if we don't change the sign, there is a problem with probes with only one change
+                # in layers, because it computes 'smaller' than the cut, and it reverses the numbering
+                layer_idx = np.digitize(-depths_bipolar_mm, -depths_layers)  # 0, 1,..3 for each channel
 
+
+            else: #case where there is no layer change 
+                layer_idx = np.zeros(len(depths_bipolar_mm)) #since no matter what the unique layer for that channel be , 
+                #it will only give one element in unique_layers so index would be 0
+   
             # get the layers and assign to groups
-            unique_layers = np.unique(layers)
+            # get the layers and assign to groups - this way it always keeps the original order of
+            # the layers
+            unique_layers = np.array(list(dict.fromkeys(layers)))
             layers_bipolar = unique_layers[layer_idx]
 
             # need to change - layers depths and channel names from mne_epochs.
@@ -296,7 +321,7 @@ if __name__ == "__main__":
                                          metadata=metadata)
 
         # save the epochs
-        lfp_epochs_mne.save(os.path.join(paths['path_preprocessed'],
+        lfp_epochs_mne.save(os.path.join(paths['path_output'],
                                          f'bipolarLFP-{session}-{BIPOLAR_SPACING}um-epo.fif'),
                             overwrite=True)
 

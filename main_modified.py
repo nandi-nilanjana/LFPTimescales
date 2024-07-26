@@ -48,25 +48,28 @@ def preprocessing_pipeline(session, monkey, alignment='Sel', signal_type='LFP', 
     if complete_trial:
         print('Including full trial time.')
 
-    # # check where are we running the code
-    # current_path = os.getcwd()
+    # check where are we running the code
+    current_path = os.getcwd()
 
-    # if current_path.startswith('/Volumes'):
-    #     server = 'L:'  # local w VPN
-    # else:
-    #     server = '/hpc'  # niolon
+    if current_path.startswith('/Users'):
+        server = 'Volumes'  # local w VPN
+        path_analog = '/Volumes/hpc/comco/kilavik.b/MatlabScripts/Behavior/Results/HandEyeMovements/Data'
+        
+    elif (current_path.startswith('/envau')):
+        server = 'envau'  # niolon
+        path_analog = '/hpc/comco/kilavik.b/MatlabScripts/Behavior/Results/HandEyeMovements/Data'
 
-    path =  f'/Volumes/work/comco/nandi.n/LFP_timescales/RAWData/{monkey}/LFPmat'
-    path_analog = '/Volumes/hpc/comco/kilavik.b/MatlabScripts/Behavior/Results/HandEyeMovements/Data'
+    path =  f'/{server}/work/comco/nandi.n/LFP_timescales/RAWData/{monkey}/LFPmat'
+   
    
     # path_output = server + '/comco/lopez.l/ephy_laminar_LFP/Results/Preprocessed_data/' + \
     #     session + '/'
     # path_output = server + '/comco/lopez.l/ephy_laminar_LFP/Results/FLIP/LFP_epochs_cut/' + \
     #     session + '/'
     
-    path_output = f'/Volumes/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
+    path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
 
-    path_doc = '/Volumes/work/comco/nandi.n/LFP_timescales/docs' #path for the excel file with ephydataset
+    path_doc = '/{server}/work/comco/nandi.n/LFP_timescales/docs' #path for the excel file with ephydataset
     # check if the preprocessing folder already exists - else create it
     if not os.path.exists(path_output):
         os.mkdir(path_output)
@@ -86,6 +89,7 @@ def preprocessing_pipeline(session, monkey, alignment='Sel', signal_type='LFP', 
     df_electrodes.set_index('SESSION', inplace=True, drop=True)  # get session as the search index
 
     area_1 = df_electrodes.loc[session]['PROBE_1']  # get the brain area of  the first probe
+    
 
     # 0.1) Get the bad channels from the excel file as long as the signal is 'LFP'
     bad_channels = []
@@ -334,7 +338,7 @@ if __name__ == "__main__":
                              'Mo180712006', 'Mo180711004']
 
    # MORE_LAMINAR = ['Mo180619002', 'Mo180705002']
-    MORE_LAMINAR = ['Mo180328001', 'Mo180712006']
+    MORE_LAMINAR = ['Mo180712006']
     
     monkey = 'Mourad'
 
