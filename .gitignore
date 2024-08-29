@@ -1,0 +1,8 @@
+/Results/
+/RAWData/
+
+/Results/ # Exclude Results and data folders
+/RAWData/
+.DS_Store
+.DS_Store n
+.DS_Store
