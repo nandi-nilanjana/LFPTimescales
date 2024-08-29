@@ -27,17 +27,15 @@ addpath('/hpc/comco/lopez.l/ephy_laminar_LFP/Raw_data/');
 
 %% Open the data and extract the behaviour and LFPs
 % define the session and the probe to use
-%fname = 't150327002';
-%fname = 'Mo180412002';
-%fname = 'Mo180626003'
-monkey_name = 'Mourad';
-%fnames = ć
-%fnames = {'Mo180411001', 'Mo180412002', 'Mo180523002'};
-%fnames = {'Mo180712006', 'Mo180626003', 'Mo180627003', 'Mo180704003','Mo180411001', 'Mo180412002', 'Mo180523002'};
 
-fnames = {'Mo18042703'};
+% monkey_name = 'Mourad';
+% %fnames = [{'Mo180330001'},{'Mo180405001'},{'Mo180405004'},{'Mo180411001'},{'Mo180412002'},{'Mo180418002'},{'Mo180419003'},{'Mo180426004'},{'Mo180503002'},{'Mo180523002'},{'Mo180524003'},{'Mo180525003'},{'Mo180531002'},{'Mo180614002'},{'Mo180614006'},{'Mo180615002'},{'Mo180615005'},{'Mo180619002'},{'Mo180620004'},{'Mo180622002'},{'Mo180626003'},{'Mo180627003'},{'Mo180629005'},{'Mo180703003'},{'Mo180704003'},{'Mo180705002'},{'Mo180706002'},{'Mo180710002'},{'Mo180711004'}];
+% fnames = [{'Mo180614002'},{'Mo180614006'},{'Mo180615002'},{'Mo180615005'},{'Mo180619002'},{'Mo180620004'},{'Mo180622002'},{'Mo180626003'},{'Mo180627003'},{'Mo180629005'},{'Mo180703003'},{'Mo180704003'},{'Mo180705002'},{'Mo180706002'},{'Mo180710002'},{'Mo180711004'}];
+%  
+monkey_name  = 'Tomy';
+fnames = [{'t140924003'},{'t140925001'},{'t140926002'},{'t140929003'},{'t140930001'},{'t141001001'},{'t141008001'},{'t141010003'},{'t150122001'},{'t150123001'},{'t150128001'},{'t150204001'},{'t150205004'},{'t150212001'},{'t150218001'},{'t150303002'},{'t150319003'},{'t150324002'},{'t150327002'},{'t150327003'},{'t150415002'},{'t150416002'},{'t150423002'},{'t150430002'},{'t150520003'},{'t150716001'}];
 
-probes = [1,2];
+  probes = [1,2];
   % set where the data matrices are stored
   saveFolder = ['/envau/work/comco/nandi.n/LFP_timescales/RAWData/' monkey_name '/LFPmat'];
   
@@ -119,50 +117,5 @@ for i=1:length(fnames)
             
             
     end
+    disp(['Session completed' {fname}])
 end
-% save MUA
-%save(append('MUA','-',fname, probe, '.mat'), 'MUA')
-
-
-% %% Open the file if there is NOT laminar info
-% 
-% monkey_name = 'Tomy';
-% probe = -1;
-% fnames = {'t140527002-07'};
-% 
-% channels = [2, 3, 4];
-% 
-% 
-% for i=1:length(fnames)
-%     fname = fnames{i};
-%     
-%     for j=1:length(channels)
-%         channel = channels(j);
-%         
-%         % get the table to find the elitrials associated to the session
-%         monkey_info = readtable([monkey_name '_NEWList2020_BetaBands.txt']);
-% 
-%         % find the indexes in the table that correspond to the session we're
-%         % checking
-%         selected_session = strcmp(monkey_info.x_Session, fname);
-%         selected_channel = monkey_info.Channel == channel;
-%         
-%         % get the index for that session and channel
-%         idx_session = find(selected_session == 1 & selected_channel ==1);
-%         
-%         % get the elitrials
-%         elitrials = str2num(monkey_info(idx_session, :).Elitrials_NEW{1});
-%         
-%         % get the behavior for that session - w the elitrials for that
-%         % probe and the LFP signal
-%         behaviour = OrganizeBehavior(fname, elitrials, 'led'); 
-%         LFP = SortChanLFP(fname, probe, channel);    
-%         
-%         save(append('LFP', '-', fname, '-', string(channel), '.mat'), 'LFP')
-%         
-%         % save behaviour file
-%         behaviour = table2struct(behaviour)
-%         save(append('behaviour','-',fname, '-', string(channel), '.mat'), 'behaviour')
-%         
-%     end    
-% end

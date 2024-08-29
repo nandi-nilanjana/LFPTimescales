@@ -55,9 +55,13 @@ def preprocessing_pipeline(session, monkey, alignment='Sel', signal_type='LFP', 
         server = 'Volumes'  # local w VPN
         path_analog = '/Volumes/hpc/comco/kilavik.b/MatlabScripts/Behavior/Results/HandEyeMovements/Data'
         
-    elif (current_path.startswith('/envau')):
+    elif (current_path.startswith('/home')):
         server = 'envau'  # niolon
         path_analog = '/hpc/comco/kilavik.b/MatlabScripts/Behavior/Results/HandEyeMovements/Data'
+    else:
+        server = 'envau'  # niolon
+        path_analog = '/hpc/comco/kilavik.b/MatlabScripts/Behavior/Results/HandEyeMovements/Data'
+        
 
     path =  f'/{server}/work/comco/nandi.n/LFP_timescales/RAWData/{monkey}/LFPmat'
    
@@ -69,7 +73,7 @@ def preprocessing_pipeline(session, monkey, alignment='Sel', signal_type='LFP', 
     
     path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
 
-    path_doc = '/{server}/work/comco/nandi.n/LFP_timescales/docs' #path for the excel file with ephydataset
+    path_doc = f'/{server}/work/comco/nandi.n/LFP_timescales/docs' #path for the excel file with ephydataset
     # check if the preprocessing folder already exists - else create it
     if not os.path.exists(path_output):
         os.mkdir(path_output)
@@ -329,18 +333,25 @@ def preprocessing_pipeline(session, monkey, alignment='Sel', signal_type='LFP', 
 
 if __name__ == "__main__":
     # list all the sessions that we want to preprocess
-    SESSIONS = ['Mo180411001', 'Mo180412002', 'Mo180626003', 'Mo180627003', 'Mo180619002',
-                'Mo180704003', 'Mo180523002', 'Mo180705002', 'Mo180711004', 'Mo180712006',
-                't150303002', 't150319003', 't150423002', 't150430002', 't150327002', 't150320002']
-
-    GOOD_LAMINAR_SESSIONS = ['Mo180411001', 'Mo180412002', 'Mo180626003', 'Mo180627003',
-                             'Mo180523002', 'Mo180704003', 't150320002', 't150327002',
-                             'Mo180712006', 'Mo180711004']
-
-   # MORE_LAMINAR = ['Mo180619002', 'Mo180705002']
-    MORE_LAMINAR = ['Mo180712006']
+    #Mourad
+    # MORE_LAMINAR = ['Mo180330001','Mo180405001','Mo180405004','Mo180411001','Mo180412002',
+    #                 'Mo180418002','Mo180419003','Mo180426004','Mo180503002', 'Mo180523002','Mo180524003', 
+    #                 'Mo180525003','Mo180531002','Mo180614002','Mo180614006',
+    #                 'Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+    #                 'Mo180626003', 'Mo180627003','Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002'
+    #                   'Mo180706002', 'Mo180710002','Mo180711004','Mo180712006']
     
-    monkey = 'Mourad'
+    #Tomy
+    #MORE_LAMINAR = ['Mo180703003','Mo180704003', 'Mo180705002','Mo180706002', 'Mo180710002','Mo180711004']
+    # MORE_LAMINAR = ['t140924003','t140925001','t140926002','t140929003','t140930001','t141001001','t141008001',
+    #'t141010003','t150122001','t150123001','t150128001','t150204001','t150205004','t150212001','t150303002',
+    #'t150319003','t150327002','t150327003','t150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
+    
+    
+    MORE_LAMINAR  = ['t150205004','t150212001','t150303002','t150319003','t150327002','t150327003','t150415002',
+                     't150416002','t150423002','t150430002','t150520003','t150716001']
+    monkey = 'Tomy'
+    #adde later t150218001
 
     for i_session in MORE_LAMINAR:
         ALIGNMENT = 'Sel'

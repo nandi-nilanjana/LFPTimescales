@@ -69,10 +69,25 @@ def redefine_layers(layers_site):
 
 if __name__ == "__main__":
     
-    # session
-    SESSIONS = ['Mo180712006']
-    #SESSIONS =['Mo180328001', 'Mo180712006']
-    
+    # session Mourad
+
+    SESSIONS = ['Mo180328001','Mo180405001','Mo180405004','Mo180411001','Mo180412002','Mo180418002',
+    'Mo180419003','Mo180426004','Mo180503002', 'Mo180523002','Mo180524003','Mo180525003','Mo180531002',
+    'Mo180614002','Mo180614006','Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+    'Mo180626003', 'Mo180627003','Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002',
+    'Mo180706002', 'Mo180710002','Mo180711004', 'Mo180712006', 't140924003','t140925001','t140926002',
+    't140929003','t140930001','t141001001',
+                't141008001','t141010003','t150122001','t150123001','t150128001','t150204001',
+                't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
+                't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
+    #Tomy
+    # SESSIONS = ['t140924003','t140925001','t140926002','t140929003','t140930001','t141001001',
+    #             't141008001','t141010003','t150122001','t150123001','t150128001','t150204001',
+    #             't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
+    #             't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
+    #SESSIONS =['t150430002']
+    #SESSIONS=['t150327003'] 
+    #add later t150218001
     for session in SESSIONS:
         #check where are we running the code
         current_path = os.getcwd()
@@ -91,10 +106,10 @@ if __name__ == "__main__":
         path = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites/{session}'
         
        # path = f'/Volumes/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites'
-        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/PSDs/{session}'
+        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/PSDs/freqs_0_200/{session}'
         
         if not os.path.exists(path_output):
-            os.mkdir(path_output)
+            os.makedirs(path_output)
             
     
         # get the filename of the data
@@ -113,7 +128,7 @@ if __name__ == "__main__":
         # compute the psd
         n_per_seg = int(LFP_epochs.info['sfreq'])
         psd, freqs = psd_array_welch(LFP_epochs.get_data(), sfreq=LFP_epochs.info['sfreq'],
-                                     fmin=0.1, fmax=150, average='median',
+                                     average='median',fmin = 0, fmax = 200,
                                      n_per_seg=n_per_seg,
                                      n_overlap=int(n_per_seg/2), n_fft=n_per_seg)
     

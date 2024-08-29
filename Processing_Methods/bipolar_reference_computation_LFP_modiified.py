@@ -134,15 +134,24 @@ def bipolar_derivation(lfp, depths, bipolar_spacing):
 
 if __name__ == "__main__":
     # list all the sessions that we want to preprocess
-    SESSIONS = ['Mo180411001', 'Mo180412002', 'Mo180626003', 'Mo180627003', 'Mo180619002',
-                'Mo180704003', 'Mo180523002', 'Mo180705002', 'Mo180711004', 'Mo180712006',
-                't150303002', 't150319003', 't150423002', 't150430002', 't150327002', 't150320002']
-
-    # GOOD_LAMINAR_SESSIONS = ['Mo180411001', 'Mo180412002', 'Mo180626003', 'Mo180627003',
-    #                          'Mo180523002', 'Mo180704003']
+   
+   #Mourad
+    #GOOD_LAMINAR_SESSIONS = ['Mo180405001','Mo180405004','Mo180411001','Mo180412002',
+                    # 'Mo180418002','Mo180419003','Mo180426004','Mo180503002', 'Mo180523002','Mo180524003', 
+                    # 'Mo180525003','Mo180531002','Mo180614002','Mo180614006',
+                    # 'Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+                    # 'Mo180626003', 'Mo180627003','Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002',
+                    #   'Mo180706002', 'Mo180710002','Mo180711004']
     
-    GOOD_LAMINAR_SESSIONS = ['Mo180712006']
+    #Tomy
+    # GOOD_LAMINAR_SESSIONS = ['t140924003','t140925001','t140926002','t140929003','t140930001','t141001001','t141008001','t141010003','t150122001',
+    #                  't150123001','t150128001','t150204001','t150205004','t150212001','t150303002','t150319003','t150327002','t150327003','t150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
 
+    GOOD_LAMINAR_SESSIONS = ['t140930001','t141001001','t141008001','t141010003','t150122001',
+                      't150123001','t150128001','t150204001','t150205004','t150212001','t150303002','t150319003',
+                      't150327002','t150327003','t150415002','t150416002','t150423002','t150430002','t150520003',
+                      't150716001']
+    #add later t150218001
     # define the new spacing between channels in um
     BIPOLAR_SPACING = 400  # in um
     
@@ -279,8 +288,9 @@ if __name__ == "__main__":
 
 
             else: #case where there is no layer change 
-                layer_idx = np.zeros(len(depths_bipolar_mm)) #since no matter what the unique layer for that channel be , 
+                layer_idx = np.zeros(len(depths_bipolar_mm),dtype=int) #since no matter what the unique layer for that channel be , 
                 #it will only give one element in unique_layers so index would be 0
+                #added dtype = int else it will throw indexing error , eg session t140929003
    
             # get the layers and assign to groups
             # get the layers and assign to groups - this way it always keeps the original order of
