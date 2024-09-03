@@ -71,23 +71,25 @@ if __name__ == "__main__":
     
     # session Mourad
 
-    SESSIONS = ['Mo180328001','Mo180405001','Mo180405004','Mo180411001','Mo180412002','Mo180418002',
-    'Mo180419003','Mo180426004','Mo180503002', 'Mo180523002','Mo180524003','Mo180525003','Mo180531002',
-    'Mo180614002','Mo180614006','Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
-    'Mo180626003', 'Mo180627003','Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002',
-    'Mo180706002', 'Mo180710002','Mo180711004', 'Mo180712006', 't140924003','t140925001','t140926002',
-    't140929003','t140930001','t141001001',
-                't141008001','t141010003','t150122001','t150123001','t150128001','t150204001',
-                't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
-                't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
+    # SESSIONS = ['Mo180328001','Mo180405001','Mo180405004','Mo180411001','Mo180412002','Mo180418002',
+    # 'Mo180419003','Mo180426004','Mo180503002', 'Mo180523002','Mo180524003','Mo180525003','Mo180531002',
+    # 'Mo180614002','Mo180614006','Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+    # 'Mo180626003', 'Mo180627003','Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002',
+    # 'Mo180706002', 'Mo180710002','Mo180711004', 'Mo180712006', 't140924003','t140925001','t140926002',
+    # 't140929003','t140930001','t141001001',
+    #             't141008001','t141010003','t150122001','t150123001','t150128001','t150204001',
+    #             't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
+    #             't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
     #Tomy
     # SESSIONS = ['t140924003','t140925001','t140926002','t140929003','t140930001','t141001001',
     #             't141008001','t141010003','t150122001','t150123001','t150128001','t150204001',
     #             't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
     #             't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
-    #SESSIONS =['t150430002']
-    #SESSIONS=['t150327003'] 
-    #add later t150218001
+    
+    SESSIONS =['Mo180626003','Mo180627003','t150128001','t150204001',
+               't150205004','t150210001','t150303002','t150416002']
+    psd_freq = [0,100]
+    
     for session in SESSIONS:
         #check where are we running the code
         current_path = os.getcwd()
@@ -104,9 +106,10 @@ if __name__ == "__main__":
         # path_output = server + '/comco/nandi.n/LFP_timescales/Results/PSDs/'
         
         path = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites/{session}'
+        path_anot = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
         
        # path = f'/Volumes/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites'
-        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/PSDs/freqs_0_200/{session}'
+        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/PSDs/{session}_{psd_freq}'
         
         if not os.path.exists(path_output):
             os.makedirs(path_output)
@@ -120,17 +123,46 @@ if __name__ == "__main__":
             if os.path.isfile((os.path.join(path,i))):
                 if f'{session}' in i and '-epo.fif' in i and 'LFP' in i and 'bipolar' in i:
                     file_name= [i]
+          
+        for j in os.listdir(path_anot):
+            if os.path.isfile((os.path.join(path_anot,j))):
+                if f'{session}' in j and '-annot.fif' in j and 'LFP' in j:
+                    fl_name= [j]
+            
             
         
         # load the data
         LFP_epochs = mne.read_epochs(os.path.join(path, file_name[0]), preload=False)
-    
-        # compute the psd
+        
+        #load the annotations file for that session to get the Go onset timing 
+        annot = mne.read_annotations(os.path.join(path_anot,fl_name[0]))
+        
+        #get the GO onset time from annotation file = annot.description has the event names and anot.onset the corresponding event onset times
+        GO_time = np.round(annot.onset[annot.description=='GO'],3)
+        times = LFP_epochs.times
+        
+        idx_go = np.where(times == GO_time)[0][0]
+        idx_before_go = np.where(times == (GO_time - 1))[0][0]
+        
+        #np.argmin(np.abs(time - (go - 1)))
+        
+        # Extract the data from 1 second before GO_time to GO_time
+        #
+        lfp_segment = LFP_epochs.get_data()[:, :, idx_before_go:idx_go]
+        
+        # compute the psd on the segmented data - 1sec before Go to Go 
         n_per_seg = int(LFP_epochs.info['sfreq'])
-        psd, freqs = psd_array_welch(LFP_epochs.get_data(), sfreq=LFP_epochs.info['sfreq'],
-                                     average='median',fmin = 0, fmax = 200,
-                                     n_per_seg=n_per_seg,
-                                     n_overlap=int(n_per_seg/2), n_fft=n_per_seg)
+        psd, freqs = psd_array_welch(lfp_segment, sfreq=LFP_epochs.info['sfreq'],
+                                      average='median',fmin = psd_freq[0], fmax = psd_freq[1],
+                                      n_per_seg=n_per_seg,
+                                      n_overlap=int(n_per_seg/2), n_fft=n_per_seg)
+        
+        
+        #PSD on the full signal time locked to SEL
+        # psd, freqs = psd_array_welch(LFP_epochs.get_data(), sfreq=LFP_epochs.info['sfreq'],
+        #                              average='median',fmin = 0, fmax = 200,
+        #                              n_per_seg=n_per_seg,
+        #                              n_overlap=int(n_per_seg/2), n_fft=n_per_seg)
     
         # save the data
         # build an xarray with the power in each site
