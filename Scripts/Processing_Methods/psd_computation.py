@@ -86,8 +86,20 @@ if __name__ == "__main__":
     #             't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
     #             't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
     
-    SESSIONS =['Mo180626003','Mo180627003','t150128001','t150204001',
-               't150205004','t150210001','t150303002','t150416002']
+   
+    
+    
+    
+    SESSIONS = ['Mo180328001','Mo180405001','Mo180405004','Mo180411001','Mo180412002','Mo180419003',
+                'Mo180426004','Mo180503002', 'Mo180523002','Mo180524003','Mo180525003','Mo180531002',
+    'Mo180614002','Mo180614006','Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+    'Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002','Mo180706002', 'Mo180710002','Mo180711004', 
+    'Mo180712006', 't140924003','t140925001','t140926002','t140929003','t140930001','t141001001',
+                't141008001','t141010003','t150122001','t150123001','t150319003','t150327002','t150327003',
+                't150415002','t150423002','t150430002','t150520003','t150716001','Mo180418002', 
+                'Mo180626003','Mo180627003','t150128001','t150204001',
+                                't150205004','t150212001','t150303002','t150416002']
+    
     psd_freq = [0,100]
     
     for session in SESSIONS:
@@ -109,7 +121,7 @@ if __name__ == "__main__":
         path_anot = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/Unipolar_sites/{session}'
         
        # path = f'/Volumes/work/comco/nandi.n/LFP_timescales/Results/Bipolar_sites'
-        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/PSDs/{session}_{psd_freq}'
+        path_output = f'/{server}/work/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/PSDs_touch_Go/{session}_{psd_freq}'
         
         if not os.path.exists(path_output):
             os.makedirs(path_output)
@@ -136,19 +148,62 @@ if __name__ == "__main__":
         
         #load the annotations file for that session to get the Go onset timing 
         annot = mne.read_annotations(os.path.join(path_anot,fl_name[0]))
-        
-        #get the GO onset time from annotation file = annot.description has the event names and anot.onset the corresponding event onset times
-        GO_time = np.round(annot.onset[annot.description=='GO'],3)
         times = LFP_epochs.times
         
-        idx_go = np.where(times == GO_time)[0][0]
-        idx_before_go = np.where(times == (GO_time - 1))[0][0]
+        #get the GO onset time from annotation file = annot.description has the event names and anot.onset the corresponding event onset times
+        # GO_time = np.round(annot.onset[annot.description=='GO'],3)
+     
         
-        #np.argmin(np.abs(time - (go - 1)))
+        # idx_go = np.where(times == GO_time)[0][0]
+        # idx_before_go = np.where(times == (GO_time - 1))[0][0]
         
-        # Extract the data from 1 second before GO_time to GO_time
-        #
-        lfp_segment = LFP_epochs.get_data()[:, :, idx_before_go:idx_go]
+        # #np.argmin(np.abs(time - (go - 1)))
+        
+        # # Extract the data from 1 second before GO_time to GO_time
+        # #
+        # lfp_segment = LFP_epochs.get_data()[:, :, idx_before_go:idx_go]
+        
+        '''
+        ##------### adding this part to compute the psd 1 sec before SC1 onset - this is because i want to compute the correlation btwn exp obtained
+        #before Go and that before SC1. - Similar to neural timescales - After this i will comment it out  
+        
+        #store the data in /knee_fixed_both/PSDs_preSC1 and Plots_preSC1
+        '''
+        
+        #get the SC1 onset time from annotation file = annot.description has the event names and anot.onset the corresponding event onset times
+        # SC1_time = np.round(annot.onset[annot.description=='SC1'],3)
+       
+        
+        # idx_SC1 = np.where(times == SC1_time)[0][0]
+        # idx_before_SC1 = np.argmin(np.abs(times - (SC1_time - 1))) #np.where(times == (SC1_time - 1))[0][0] i dont understand why ths is not working 
+        
+        # #np.argmin(np.abs(time - (go - 1)))
+        
+        # # Extract the data from 1 second before GO_time to GO_time
+        # #
+        # lfp_segment = LFP_epochs.get_data()[:, :, idx_before_SC1:idx_SC1]
+        
+        #computing over the entire trial now
+        
+        #get touch time
+        t_time = np.round(annot.onset[annot.description=='touch'],3)
+        
+        #get Go time
+        GO_time = np.round(annot.onset[annot.description=='GO'],3)
+        
+        #get the indices
+        idx_touch = np.where(times == t_time)[0][0]
+        idx_GO = np.where(times == (GO_time - 1))[0][0]
+        
+        #extract LFP segment
+        lfp_segment = LFP_epochs.get_data()[:, :, idx_touch:idx_GO]
+        
+        
+        
+        
+        ##-------------------------------------------------------------------------------####
+        
+        
         
         # compute the psd on the segmented data - 1sec before Go to Go 
         n_per_seg = int(LFP_epochs.info['sfreq'])

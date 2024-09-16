@@ -108,7 +108,7 @@ def compute_and_plot_fooof(psd, fit_freq,area_label, session_label):
         
    
         knee_value = fm.aperiodic_params_[1] #the params are offset, knee, exponent return array from the model
-        exp = exp = fm.aperiodic_params_[2]        
+        exp = fm.aperiodic_params_[2]        
         knee_freq = pow(knee_value,(1/exp))
         
         if (knee_freq > fit_freq[0]) & (knee_freq< fit_freq[1]): #if knee actually exists then take the slope from the knee fit
@@ -125,17 +125,18 @@ def compute_and_plot_fooof(psd, fit_freq,area_label, session_label):
             
             #now plot the entire fit , aperiodic part, data  - log(Power) vs Frequency
             
-            fm.plot(plot_aperiodic=True, plt_log=False,
+            fm.plot(plot_aperiodic=True, plt_log=True,
                     ax=ax.flatten()[i_ch],
                     add_legend=False, aperiodic_kwargs={'lw': lw1, 'zorder': 10},
                     peak_kwargs={'lw': lw1}, data_kwargs={'lw': lw1},
                     model_kwargs={'lw': lw1})
             
-            ax.flatten()[i_ch].axvline(knee_freq,color= 'red', linestyle = '--')
+            #ax.flatten()[i_ch].axvline(knee_freq,color= 'red', linestyle = '--')
            
             ax.flatten()[i_ch].set_title(f'{ch_name} - knee : {knee_freq:2f} e: {exp:.2f}')
-            ax.flatten()[i_ch].set_xlabel('log(Power)')
-            ax.flatten()[i_ch].set_ylabel('Freq')
+            
+            ax.flatten()[i_ch].set_ylabel('log(Power)')
+            ax.flatten()[i_ch].set_xlabel('log(Freq)')
             
             #now plot in fig2 in loglog space but plotting actual power vs log(Frequency)
             ax2.flatten()[i_ch].loglog(fm.freqs, 10**(fm._ap_fit), label=ch_name)
@@ -144,8 +145,8 @@ def compute_and_plot_fooof(psd, fit_freq,area_label, session_label):
             ax2.flatten()[i_ch].axvline(knee_freq, color='red', linestyle='--')
             
             ax2.flatten()[i_ch].set_title(f'{ch_name} - knee : {knee_freq:2f} e: {exp:.2f}')
-            ax2.flatten()[i_ch].set_xlabel('Power')
-            ax2.flatten()[i_ch].set_ylabel('log(Freq)')
+            ax2.flatten()[i_ch].set_xlabel('Freq')
+            ax2.flatten()[i_ch].set_ylabel('Power')
             
         else:
             
@@ -165,15 +166,16 @@ def compute_and_plot_fooof(psd, fit_freq,area_label, session_label):
             
             #now plot the entire fit , aperiodic part, data - log(Power) vs Frequency
             
-            fm.plot(plot_aperiodic=True, plt_log=False,
+            fm.plot(plot_aperiodic=True, plt_log=True,
                     ax=ax.flatten()[i_ch],
                     add_legend=False, aperiodic_kwargs={'lw': lw1, 'zorder': 10},
                     peak_kwargs={'lw': lw1}, data_kwargs={'lw': lw1},
                     model_kwargs={'lw': lw1})
             
             ax.flatten()[i_ch].set_title(f'{ch_name} - knee : {np.nan} e: {exp:.2f}')
-            ax.flatten()[i_ch].set_xlabel('log(Power)')
-            ax.flatten()[i_ch].set_ylabel('Freq')
+            
+            ax.flatten()[i_ch].set_ylabel('log(Power)')
+            ax.flatten()[i_ch].set_xlabel('log(Freq)')
             
             #now plot in fig2 in loglog space but plotting actual power vs log(Frequency)
             
@@ -181,8 +183,8 @@ def compute_and_plot_fooof(psd, fit_freq,area_label, session_label):
             ax2.flatten()[i_ch].loglog(psd['freqs'].values , psd.mean(dim='trials')[i_ch].values, color='k')
             
             ax2.flatten()[i_ch].set_title(f'{ch_name} - knee : {np.nan} e: {exp:.2f}')
-            ax2.flatten()[i_ch].set_xlabel('Power')
-            ax2.flatten()[i_ch].set_ylabel('log(Freq)')
+            ax2.flatten()[i_ch].set_ylabel('Power')
+            ax2.flatten()[i_ch].set_xlabel('Freq')
     
     
     fig2.suptitle(f'Aperiodic fitting - {session_label} - {area_label}',
@@ -190,7 +192,7 @@ def compute_and_plot_fooof(psd, fit_freq,area_label, session_label):
     fig2.tight_layout()
     sns.despine(fig2)
 
-    fig.suptitle(f'FOOOF fit with knee - {session_label} - {area_label}',
+    fig.suptitle(f'FOOOF fit with knee_loglog - {session_label} - {area_label}',
                   weight='bold', y=0.99)
     fig.tight_layout()
     sns.despine(fig)
@@ -370,10 +372,28 @@ if __name__ == '__main__':
 #                             't150205004','t150212001','t150303002','t150319003','t150327002','t150327003',
 #                             't150415002','t150416002','t150423002','t150430002','t150520003','t150716001']
     
-    SESSIONS = ['Mo180627003']
+   #  SESSIONS= ['Mo180328001','Mo180405001','Mo180405004','Mo180411001','Mo180412002','Mo180419003',
+   #             'Mo180426004','Mo180503002', 'Mo180523002','Mo180524003','Mo180525003','Mo180531002',
+   # 'Mo180614002','Mo180614006','Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+   # 'Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002',
+   # 'Mo180706002', 'Mo180710002','Mo180711004', 'Mo180712006', 't140924003','t140925001','t140926002',
+   # 't140929003','t140930001','t141001001',
+   #             't141008001','t141010003','t150122001','t150123001','t150319003','t150327002','t150327003',
+   #             't150415002','t150423002','t150430002','t150520003','t150716001']
+    
+    SESSIONS =  ['Mo180328001','Mo180405001','Mo180405004','Mo180411001','Mo180412002','Mo180419003',
+                'Mo180426004','Mo180503002', 'Mo180523002','Mo180524003','Mo180525003','Mo180531002',
+    'Mo180614002','Mo180614006','Mo180615002','Mo180615005', 'Mo180619002','Mo180620004','Mo180622002',
+    'Mo180629005', 'Mo180703003','Mo180704003', 'Mo180705002','Mo180706002', 'Mo180710002','Mo180711004', 
+    'Mo180712006', 't140924003','t140925001','t140926002','t140929003','t140930001','t141001001',
+                't141008001','t141010003','t150122001','t150123001','t150319003','t150327002','t150327003',
+                't150415002','t150423002','t150430002','t150520003','t150716001','Mo180418002', 
+                'Mo180626003','Mo180627003','t150128001','t150204001',
+                                't150205004','t150212001','t150303002','t150416002']
     #fm_type = 'fixed'
     
     fit_freq = (2,80) #since i need to fit it in knee mode first
+    psd_freq = [0,100]
 
     for session in SESSIONS:
         # check where are we running the code
@@ -393,9 +413,9 @@ if __name__ == '__main__':
         
         #paths for psd computed  between [0,200] Hz and the fooof fits without knee between [35,150]Hz
         
-        path = server + f'/comco/nandi.n/LFP_timescales/Results/PSDs/freqs_0_200/{session}'
-        path_plots = server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/Plots/{session}_{fit_freq}'
-        path_fooof = server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/FOOOF/{session}_{fit_freq}'
+        path = server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/PSDs_touch_Go/{session}_{psd_freq}'
+        path_plots = server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/Plots_touch_Go/{session}_{fit_freq}'
+        path_fooof = server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/FOOOF_touch_Go/{session}_{fit_freq}'
         
 
         if not os.path.exists(path_plots):
@@ -547,7 +567,8 @@ if __name__ == '__main__':
 
         # # Save the dataframe as a pickle file
         #df.to_pickle(server + f'/comco/nandi.n/LFP_timescales/Results/FOOOF/{session}/layerwise_fooof_results_.pkl')
-        df.to_pickle(server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/FOOOF/{session}_{fit_freq}/layerwise_fooof_results.pkl')
+        #df.to_pickle(server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/FOOOF/{session}_{fit_freq}/layerwise_fooof_results.pkl')
+        df.to_pickle(server + f'/comco/nandi.n/LFP_timescales/Results/knee_fixed_both/FOOOF_touch_Go/{session}_{fit_freq}/layerwise_fooof_results.pkl')
         print (f'Completed session {session}')
         
         
